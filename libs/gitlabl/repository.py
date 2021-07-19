@@ -13,7 +13,7 @@ from libs.kafka.logging import LogMessage
 from libs.core.environment import envvar
 
 GITLAB_CERT_VERIFY = True if envvar("GITLAB_VERIF", str(True)).lower() in ("yes", "y", "true", "1", "t") else False
-
+BLACKLIST_PATH = "../datasets/blacklist"
 
 def create_repository_if_not_exists(gitlabserver, token, repository, servicename):
     '''
@@ -29,22 +29,31 @@ def create_repository_if_not_exists(gitlabserver, token, repository, servicename
             gprojects = gitlab_instance.projects.list(all=True)
             project_names = [project.name for project in gprojects]
             if not repository in project_names:
-                LogMessage(f"Creating new repository: {repository}", LogMessage.LogTyp.WARNING, servicename).log()
+                LogMessage(f"Creating new repository: {repository}", LogMessage.LogTyp.INFO, servicename).log()
                 gprojects = gitlab_instance.projects.create({'name': repository})
                 gprojects.avatar = open(os.path.abspath("../assets/icon.png"), 'rb')
                 gprojects.save()
-                with open(os.path.abspath("../datasets/blacklist.json")) as file:
-                    gprojects.commits.create({
-                        'branch': 'master',
-                        'commit_message': 'initial commit',
-                        'actions': [
-                            {
-                                'action': 'create',
-                                'file_path': 'blacklist.json',
-                                'content': json.dumps(json.load(file), indent=4, sort_keys=True),
-                            }]
-                    })
-                    LogMessage(f"The blacklist has been added to the repository: {repository}", LogMessage.LogTyp.WARNING, servicename).log()
+
+                for file in os.listdir(BLACKLIST_PATH):
+
+                    if not file.endswith('.json'):
+                        continue
+
+                    filename = str(file)
+
+                    with open(f"{BLACKLIST_PATH}/{filename}") as file:
+                        gprojects.commits.create({
+                            'branch': 'master',
+                            'commit_message': f"uploaded {filename} as blacklist",
+                            'actions': [
+                                {
+                                    'action': 'create',
+                                    'file_path': f"/blacklist/{filename}",
+                                    'content': json.dumps(json.load(file), indent=4, sort_keys=True),
+                                }]
+                        })
+                LogMessage(f"The blacklist files have been added to the repository: {repository}", LogMessage.LogTyp.INFO, servicename).log()
+
                 if 'README.md' in [gprojects.repository_tree(branch='master')]:
                         gprojects.commits.create({
                         'branch': 'master',
@@ -93,9 +102,9 @@ def __create_datasources_in_repository(gprojects, servicename):
                         'file_path': 'twitter_sources.json',
                         'content': json.dumps(json.load(twitter_sources), indent=4, sort_keys=True),
                     },
-                    {
+                    { #TODO delete directory blacklist
                         'action': 'delete',
-                        'file_path': 'blacklist.json',
+                        'file_path': 'blacklist',
                     }
                 ]
             })
@@ -160,16 +169,6 @@ def create_monthly_if_not_exists(gitlabserver, token, repository, servicename):
         gprojects = get_project_handle(gitlabserver, token, repository, servicename)
         if not branch_name in [branch.name for branch in gprojects.branches.list()]:
             gprojects.branches.create({'branch': branch_name, 'ref': 'master'})
-            gprojects.commits.create({
-                'branch': str(branch_name),
-                'commit_message': 'remove blacklist',
-                'actions': [
-                    {
-                        'action': 'delete',
-                        'file_path': 'blacklist.json',
-                    }
-                ]
-            })
         else:
             LogMessage("Monthlybranch already exists", LogMessage.LogTyp.INFO, servicename).log()
     except Exception as error:

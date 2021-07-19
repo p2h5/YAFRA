@@ -56,6 +56,7 @@ GITLAB_TOKEN = envvar("GITLAB_TOKEN", "NOTWORKING")
 GITLAB_REPO_NAME = envvar("GITLAB_REPO_NAME", "IOCFindings")
 
 DOCKER_REPORTS_PATH = "/app/iocextractor/reports"
+BLACKLIST_PATH = "../datasets/blacklist"
 
 
 class Config:
@@ -117,12 +118,32 @@ class Extractor(Server):
         try:
             if Extractor.BLACKLIST is None or len(Extractor.BLACKLIST) <= 0:
                 LogMessage("Using local blacklist.", LogMessage.LogTyp.INFO, SERVICENAME).log()
-                with open(os.path.abspath("../datasets/blacklist.json")) as content:
-                    content = json.load(content)
+
+                for file in os.listdir(BLACKLIST_PATH):
+
+                    if not file.endswith('.json'):
+                        continue
+
+                    filename = str(file)
+
+                    with open(f"{BLACKLIST_PATH}/{filename}") as blacklist_content:
+                        blacklist_content = json.load(blacklist_content)
+                        content.update(blacklist_content)
             else:
                 LogMessage("Using blacklist from gitlab.", LogMessage.LogTyp.INFO, SERVICENAME).log()
-                content = read_file_from_gitlab(gitlabserver=GITLAB_SERVER, token=GITLAB_TOKEN, repository=GITLAB_REPO_NAME, file="blacklist.json", servicename=SERVICENAME, branch_name="master")
-                content = json.loads(content)
+
+                # TODO get the filenames from gitlab instead from the local blacklists
+                for file in os.listdir("../datasets/blacklist"):
+                    if not file.endswith('.json'):
+                        continue
+
+                    filename = str(file)
+                    blacklist_content = read_file_from_gitlab(gitlabserver=GITLAB_SERVER, token=GITLAB_TOKEN,
+                                                        repository=GITLAB_REPO_NAME,
+                                                        file=filename, servicename=SERVICENAME,
+                                                        branch_name="master")
+                    blacklist_content = json.loads(blacklist_content)
+                    content.update(blacklist_content)
             if content is not None:
                 Extractor.BLACKLIST = content
         except Exception as error:

@@ -1,0 +1,31 @@
+{
+  "urls": [
+    "https://us-cert.cisa.gov",
+    "www.fbi.gov/contact-us/field",
+    "www.us-cert.gov/report",
+    "http://www.google.com",
+    "http://www.bing.com",
+    "http://www.facebook.com",
+    "https://nvd.nist.gov",
+    "www.fbi.gov/contact-us/field,",
+    "http://www.us-cert.cisa.gov/.",
+    "www.us-cert.gov/report,",
+    "https://www.us",
+    "https://www.us-cert.gov",
+    "www.fbi.gov/contact-",
+    "https://attack.mitre.org",
+    "www.fbi.gov/contact-us/field.",
+    "www.fbi.gov/contact-us/field-office.",
+    "www.fbi.gov/contact-us/field-",
+    "https://www.fbi.gov/investigate/cyber",
+    "https://www.fbi.gov",
+    "www.virustotal.com/gui",
+    "https://www.us-cert.cisa.gov",
+    "http://www.bitdefender.com/",
+    "https://report.ncsc.gov.uk/.",
+    "https://report.ncsc.gov.uk/",
+    "www.fireeye.com/reports",
+    "http://www.bitdefender.com/",
+    "http://www.symantec.com"
+  ]
+}
