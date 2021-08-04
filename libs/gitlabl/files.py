@@ -9,7 +9,7 @@ from libs.gitlabl.repository import get_project_handle
 def read_file_from_gitlab(gitlabserver, token, repository, file, servicename, branch_name=""):
     '''
     read_file_from_gitlab will read in a file from gitlab and return its content.
-    @param gitlabserver will be the address of the gitlab entdpoint.
+    @param gitlabserver will be the address of the gitlab endpoint.
     @parma token will be the access-token for gitlab.
     @param repository will be the name of the repository.
     @param file with be a path in on a branch. The branch will always be the dailybranch.
